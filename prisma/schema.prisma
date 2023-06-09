@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:../prod.db"
+}
+
+model course {
+  code      String      @id
+  title     String
+  credits   Int
+  result    result[]
+  result_pg result_pg[]
+}
+
+model result {
+  id           Int     @id @default(autoincrement())
+  rollno       String
+  code         String
+  grade        Int
+  grade_letter String
+  semester     Int
+  gp           Int
+  course       course  @relation(fields: [code], references: [code])
+  student      student @relation(fields: [rollno], references: [rollno])
+
+  @@unique([rollno, code], map: "sqlite_autoindex_result_1")
+}
+
+model result_pg {
+  id           Int     @id @default(autoincrement())
+  rollno       String
+  code         String
+  grade        Int
+  grade_letter String
+  semester     Int
+  course       course  @relation(fields: [code], references: [code])
+  student      student @relation(fields: [rollno], references: [rollno])
+
+  @@unique([rollno, code], map: "sqlite_autoindex_result_pg_1")
+}
+
+model student {
+  rollno       String      @id
+  name         String
+  fathers_name String
+  result       result[]
+  result_pg    result_pg[]
+}
+
+model summary {
+  id         Int    @id @default(autoincrement())
+  rollno     String
+  semester   Int
+  sgpi       String
+  cgpi       String
+  sgpi_total Int
+  cgpi_total Int
+}
