@@ -50,9 +50,20 @@ model student {
   result_pg    result_pg[]
 }
 
-model summary {
+model sem_summary {
   id         Int    @id @default(autoincrement())
   rollno     String
+  semester   Int
+  sgpi       String
+  cgpi       String
+  sgpi_total Int
+  cgpi_total Int
+
+  @@unique([rollno, semester])
+}
+
+model summary {
+  rollno     String @id
   semester   Int
   sgpi       String
   cgpi       String

@@ -19,7 +19,7 @@ async function parseHTML(rawHTML) {
     // table[1] contains information about the student
     const studentInfo = tables[1].querySelectorAll('td');
 
-    const rollno = studentInfo[0].querySelectorAll('p')[1].textContent.trim();
+    const rollno = studentInfo[0].querySelectorAll('p')[1].textContent.trim().toLowerCase();
     const name = studentInfo[1].querySelectorAll('p')[1].textContent.trim();
     const fathersName = studentInfo[2].querySelectorAll('p')[1].textContent.trim();
 
@@ -29,13 +29,13 @@ async function parseHTML(rawHTML) {
             name,
             rollno,
             fathers_name: fathersName
-        }, 
+        },
     })
 
     console.log(student);
 
-    // table[2] through table[n-2] contains the result of the student in a pair of two!
-    for (let i = 2; i < tables.length - 1; i += 2) {
+    // table[2] through table[n-3] contains the result of the student in a pair of two!
+    for (let i = 2; i < tables.length - 2; i += 2) {
         let semNo = i / 2;
 
         // table[i] contains the detailed result of the student in a particular semester
@@ -89,9 +89,9 @@ async function parseHTML(rawHTML) {
 
         const cgpiTotal = parseInt(semSummary[4].querySelectorAll('p')[1].textContent.trim());
 
-        await prisma.summary.create({
+        await prisma.sem_summary.create({
             data: {
-                rollno,
+                rollno: rollno,
                 semester: semNo,
                 sgpi: sgpi,
                 sgpi_total: sgpiTotal,
@@ -99,7 +99,30 @@ async function parseHTML(rawHTML) {
                 cgpi_total: cgpiTotal
             }
         })
+
+        await prisma.summary.upsert({
+            create: {
+                rollno: rollno,
+                semester: semNo,
+                sgpi: sgpi,
+                sgpi_total: sgpiTotal,
+                cgpi: cgpi,
+                cgpi_total: cgpiTotal
+            },
+            update: {
+                semester: semNo,
+                sgpi: sgpi,
+                sgpi_total: sgpiTotal,
+                cgpi: cgpi,
+                cgpi_total: cgpiTotal
+            },
+            where: {
+                rollno: rollno
+            }
+        })
     }
+
+    tables[tables.length - 2].querySelector
 }
 
 async function main() {
