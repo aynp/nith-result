@@ -1,0 +1,55 @@
+name: Scrape and Rank
+on:
+  workflow_dispatch:
+jobs:
+  scrape:
+    name: Scrape 
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3 
+        with:
+          node-version: 'latest'
+
+      - name: Install Packages
+        run: |
+          yarn install
+     
+      - name: Scrape Results
+        # run: |
+        #   yarn scrape
+        run: |
+          echo "Skipped"
+  
+  rank:
+    name: Rank the results
+    runs-on: ubuntu-latest
+    needs: scrape
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3 
+        with:
+          node-version: 'latest'
+      
+      - name: Install Packages
+        run: |
+          yarn install
+      
+      - name: Scrape Results
+        run: |
+          yarn rank
+
+  commit:
+    name: Commit code
+    runs-on: ubuntu-latest
+    needs: rank
+    steps:
+      - name: Commit
+        run: |
+          echo "TODO"
