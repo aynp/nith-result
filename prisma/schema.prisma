@@ -46,6 +46,9 @@ model student {
   rollno       String      @id
   name         String
   fathers_name String
+  batch        Int
+  summary      summary     @relation(fields: [rollno], references: [rollno])
+  rank         rank        @relation(fields: [rollno], references: [rollno])
   result       result[]
   result_pg    result_pg[]
 }
@@ -63,10 +66,22 @@ model sem_summary {
 }
 
 model summary {
-  rollno     String @id
+  rollno     String   @id
   semester   Int
   sgpi       String
   cgpi       String
   sgpi_total Int
   cgpi_total Int
+  student    student?
+}
+
+model rank {
+  rollno            String   @id
+  class_rank_sgpi   Int      @default(0)
+  class_rank_cgpi   Int      @default(0)
+  year_rank_sgpi    Int      @default(0)
+  year_rank_cgpi    Int      @default(0)
+  college_rank_sgpi Int      @default(0)
+  college_rank_cgpi Int      @default(0)
+  student           student?
 }
