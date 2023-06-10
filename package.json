@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrape": "rm prod.db; prisma db push; node scripts/scrape.mjs",
-    "rank": "node scripts/rank.mjs"
+    "scrape": "node scripts/scrape.mjs",
+    "rank": "node scripts/rank.mjs",
+    "add-branches": "node scripts/branch.mjs"
   },
   "dependencies": {
     "@prisma/client": "^4.15.0",

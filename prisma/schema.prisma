@@ -46,6 +46,8 @@ model student {
   rollno       String      @id
   name         String
   fathers_name String
+  branch_code  String
+  branch       branch      @relation(fields: [branch_code], references: [code], onDelete: Cascade)
   batch        Int
   summary      summary     @relation(fields: [rollno], references: [rollno])
   rank         rank        @relation(fields: [rollno], references: [rollno])
@@ -84,4 +86,10 @@ model rank {
   college_rank_sgpi Int      @default(0)
   college_rank_cgpi Int      @default(0)
   student           student?
+}
+
+model branch {
+  code    String    @id
+  name    String
+  student student[]
 }
