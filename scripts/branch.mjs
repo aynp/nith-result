@@ -1,7 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
-const branchMap = {
+export const branchMap = {
     'bcs': 'Computer Science & Engineering',
     'dcs': 'Computer Science & Engineering Dual Degree',
 

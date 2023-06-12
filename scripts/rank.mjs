@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { readdirSync } from "fs";
+import { branchMap } from "./branch.mjs";
 const prisma = new PrismaClient();
 
 async function _rank(query, type, basedOn) {
@@ -42,6 +43,19 @@ async function main() {
         await _rank({
             batch: batch
         }, 'year', 'sgpi');
+
+        // rank in the class
+        const branches = Object.keys(branchMap);
+        for (const branch of branches) {
+            await _rank({
+                branch_code: branch,
+                batch: batch
+            }, 'class', 'cgpi');
+            await _rank({
+                branch_code: branch,
+                batch: batch
+            }, 'class', 'sgpi');
+        }
     }
 
     // TODO rank in class
