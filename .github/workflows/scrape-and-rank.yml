@@ -23,6 +23,7 @@ jobs:
       - name: Scrape Results
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: |
           yarn scrape
   
@@ -46,5 +47,6 @@ jobs:
       - name: Scrape Results
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}
         run: |
           yarn rank
