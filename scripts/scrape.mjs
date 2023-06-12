@@ -5,13 +5,10 @@ import fs from 'fs';
 
 const prisma = new PrismaClient();
 
-const emailsAll = fs.readFileSync('./data/ug2020', 'utf-8');
-const emails = emailsAll.split(',');
-
 let parseErrorCount = 0;
 let fetchErrCount = 0;
 
-async function parseHTML(rawHTML) {
+async function parseHTML(rawHTML, batch) {
     try {
         const dom = new JSDOM(rawHTML);
 
@@ -22,16 +19,27 @@ async function parseHTML(rawHTML) {
         const studentInfo = tables[1].querySelectorAll('td');
 
         const rollNo = studentInfo[0].querySelectorAll('p')[1].textContent.trim().toLowerCase();
+
+        // Will only work with with roll numbers such as 20bcs020
+        const branch_code = rollNo.substring(2, 5);
+
         const name = studentInfo[1].querySelectorAll('p')[1].textContent.trim();
         const fathersName = studentInfo[2].querySelectorAll('p')[1].textContent.trim();
 
-        console.log(rollNo)
-        const student = await prisma.student.create({
-            data: {
+        console.log(rollNo, branch_code, name, fathersName);
+
+        const student = await prisma.student.upsert({
+            create: {
                 name,
                 rollno: rollNo,
-                fathers_name: fathersName
+                fathers_name: fathersName,
+                batch: batch,
+                branch_code: branch_code,
             },
+            update: {},
+            where: {
+                rollno: rollNo
+            }
         })
 
         console.log(student);
@@ -66,14 +74,26 @@ async function parseHTML(rawHTML) {
                     }
                 })
 
-                await prisma.result.create({
-                    data: {
+                await prisma.result.upsert({
+                    create: {
                         rollno: rollNo,
                         grade: GP / courseCredits,
                         code: courseCode,
                         semester: semNo,
                         grade_letter: gradeLetter,
                         gp: GP
+                    },
+                    update: {
+                        grade: GP / courseCredits,
+                        grade_letter: gradeLetter,
+                        gp: GP
+                    },
+                    where: {
+                        rollno_code_semester: {
+                            code: courseCode,
+                            rollno: rollNo,
+                            semester: semNo
+                        }
                     }
                 })
             }
@@ -91,16 +111,28 @@ async function parseHTML(rawHTML) {
 
             const cgpiTotal = parseInt(semSummary[4].querySelectorAll('p')[1].textContent.trim());
 
-            await prisma.sem_summary.create({
-                data: {
+            await prisma.sem_summary.upsert({
+                create: {
                     rollno: rollNo,
                     semester: semNo,
                     sgpi: sgpi,
                     sgpi_total: sgpiTotal,
                     cgpi: cgpi,
                     cgpi_total: cgpiTotal
+                },
+                update: {
+                    sgpi: sgpi,
+                    sgpi_total: sgpiTotal,
+                    cgpi: cgpi,
+                    cgpi_total: cgpiTotal
+                },
+                where: {
+                    rollno_semester: {
+                        rollno: rollNo,
+                        semester: semNo
+                    }
                 }
-            })
+            });
 
             await prisma.summary.upsert({
                 create: {
@@ -121,37 +153,46 @@ async function parseHTML(rawHTML) {
                 where: {
                     rollno: rollNo
                 }
-            })
+            });
         }
 
         tables[tables.length - 2].querySelector
     } catch (err) {
+        console.log(err);
         parseErrorCount++;
     }
 }
 
-async function main() {
-    for (let i = 0; i < emails.length; i++) {
+async function fetchBatch(batch) {
+    const emailsAll = fs.readFileSync(`./data/${batch}`, 'utf-8');
+    const emails = emailsAll.split(',');
+
+    for (let i = 0; i < 5; i++) {
         const email = emails[i];
         const rollNo = email.substring(0, email.indexOf('@'));
         console.log(rollNo);
         try {
-            const res = await axios.post('http://results.nith.ac.in/scheme20/studentresult/result.asp', `RollNumber=${rollNo}`, {
+            const res = await axios.post(`http://results.nith.ac.in/scheme${batch}/studentresult/result.asp`, `RollNumber=${rollNo}`, {
                 timeout: 5000
             });
 
-            parseHTML(res.data);
+            await parseHTML(res.data, batch);
         } catch (err) {
             fetchErrCount++;
         }
     }
 }
 
-try {
-    await main();
-} catch (error) {
-    console.log(error);
+async function main() {
+    const files = fs.readdirSync('./data');
+
+    for (const file of files) {
+        console.log(`Processing ${file} batch`)
+        await fetchBatch(file)
+    };
 }
+
+await main();
 
 console.log("Failed to parse for", parseErrorCount, "students.");
 console.log("Failed to fetch for", fetchErrCount, "students.");

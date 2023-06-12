@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "scrape": "rm prod.db; prisma db push; node scripts/scrape.mjs",
+    "scrape": "rm prod.db; prisma db push; node scripts/branch.mjs; node scripts/scrape.mjs",
     "rank": "node scripts/rank.mjs"
   },
   "dependencies": {
