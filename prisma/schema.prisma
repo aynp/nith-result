@@ -16,7 +16,6 @@ model course {
 }
 
 model result {
-  id           Int     @id @default(autoincrement())
   rollno       String
   code         String
   grade        Int
@@ -26,11 +25,10 @@ model result {
   course       course  @relation(fields: [code], references: [code])
   student      student @relation(fields: [rollno], references: [rollno])
 
-  @@unique([rollno, code], map: "sqlite_autoindex_result_1")
+  @@id([rollno, code, semester])
 }
 
 model result_pg {
-  id           Int     @id @default(autoincrement())
   rollno       String
   code         String
   grade        Int
@@ -39,32 +37,33 @@ model result_pg {
   course       course  @relation(fields: [code], references: [code])
   student      student @relation(fields: [rollno], references: [rollno])
 
-  @@unique([rollno, code], map: "sqlite_autoindex_result_pg_1")
+  @@id([rollno, code, semester])
 }
 
 model student {
-  rollno       String      @id
+  rollno       String        @id
   name         String
   fathers_name String
-  branch_code  String
-  branch       branch      @relation(fields: [branch_code], references: [code], onDelete: Cascade)
-  batch        Int
-  summary      summary     @relation(fields: [rollno], references: [rollno])
-  rank         rank        @relation(fields: [rollno], references: [rollno])
+  batch        String
+  summary      summary?
+  rank         rank?
   result       result[]
   result_pg    result_pg[]
+  branch_code  String?
+  branch       branch?       @relation(fields: [branch_code], references: [code])
+  sem_summary  sem_summary[]
 }
 
 model sem_summary {
-  id         Int    @id @default(autoincrement())
-  rollno     String
-  semester   Int
-  sgpi       String
-  cgpi       String
-  sgpi_total Int
-  cgpi_total Int
+  rollno        String
+  semester      Int
+  sgpi          String
+  cgpi          String
+  sgpi_total    Int
+  cgpi_total    Int
+  student       student? @relation(fields: [rollno], references: [rollno])
 
-  @@unique([rollno, semester])
+  @@id([rollno, semester])
 }
 
 model summary {
@@ -74,7 +73,7 @@ model summary {
   cgpi       String
   sgpi_total Int
   cgpi_total Int
-  student    student?
+  student    student? @relation(fields: [rollno], references: [rollno])
 }
 
 model rank {
@@ -85,7 +84,7 @@ model rank {
   year_rank_cgpi    Int      @default(0)
   college_rank_sgpi Int      @default(0)
   college_rank_cgpi Int      @default(0)
-  student           student?
+  student           student? @relation(fields: [rollno], references: [rollno])
 }
 
 model branch {

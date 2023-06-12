@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { readdirSync } from "fs";
 const prisma = new PrismaClient();
 
 async function _rank(query, type, basedOn) {
@@ -32,13 +33,16 @@ async function main() {
     await _rank({}, 'college', 'cgpi');
     await _rank({}, 'college', 'sgpi');
 
-    // rank in the batch
-    await _rank({
-        batch: 20
-    }, 'year', 'cgpi',);
-    await _rank({
-        batch: 20
-    }, 'year', 'sgpi');
+    const batches = readdirSync('./data');
+    for (const batch of batches) {
+        // rank in the batch
+        await _rank({
+            batch: batch
+        }, 'year', 'cgpi',);
+        await _rank({
+            batch: batch
+        }, 'year', 'sgpi');
+    }
 
     // TODO rank in class
 }

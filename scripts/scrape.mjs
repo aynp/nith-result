@@ -8,7 +8,7 @@ const prisma = new PrismaClient();
 let parseErrorCount = 0;
 let fetchErrCount = 0;
 
-async function parseHTML(rawHTML) {
+async function parseHTML(rawHTML, batch) {
     try {
         const dom = new JSDOM(rawHTML);
 
@@ -22,20 +22,24 @@ async function parseHTML(rawHTML) {
 
         // Will only work with with roll numbers such as 20bcs020
         const branch_code = rollNo.substring(2, 5);
-        
+
         const name = studentInfo[1].querySelectorAll('p')[1].textContent.trim();
         const fathersName = studentInfo[2].querySelectorAll('p')[1].textContent.trim();
-        
+
         console.log(rollNo, branch_code, name, fathersName);
 
-        const student = await prisma.student.create({
-            data: {
+        const student = await prisma.student.upsert({
+            create: {
                 name,
                 rollno: rollNo,
                 fathers_name: fathersName,
-                batch: 20,
-                branch_code: 'bcs',
+                batch: batch,
+                branch_code: branch_code,
             },
+            update: {},
+            where: {
+                rollno: rollNo
+            }
         })
 
         console.log(student);
@@ -70,14 +74,26 @@ async function parseHTML(rawHTML) {
                     }
                 })
 
-                await prisma.result.create({
-                    data: {
+                await prisma.result.upsert({
+                    create: {
                         rollno: rollNo,
                         grade: GP / courseCredits,
                         code: courseCode,
                         semester: semNo,
                         grade_letter: gradeLetter,
                         gp: GP
+                    },
+                    update: {
+                        grade: GP / courseCredits,
+                        grade_letter: gradeLetter,
+                        gp: GP
+                    },
+                    where: {
+                        rollno_code_semester: {
+                            code: courseCode,
+                            rollno: rollNo,
+                            semester: semNo
+                        }
                     }
                 })
             }
@@ -95,16 +111,28 @@ async function parseHTML(rawHTML) {
 
             const cgpiTotal = parseInt(semSummary[4].querySelectorAll('p')[1].textContent.trim());
 
-            await prisma.sem_summary.create({
-                data: {
+            await prisma.sem_summary.upsert({
+                create: {
                     rollno: rollNo,
                     semester: semNo,
                     sgpi: sgpi,
                     sgpi_total: sgpiTotal,
                     cgpi: cgpi,
                     cgpi_total: cgpiTotal
+                },
+                update: {
+                    sgpi: sgpi,
+                    sgpi_total: sgpiTotal,
+                    cgpi: cgpi,
+                    cgpi_total: cgpiTotal
+                },
+                where: {
+                    rollno_semester: {
+                        rollno: rollNo,
+                        semester: semNo
+                    }
                 }
-            })
+            });
 
             await prisma.summary.upsert({
                 create: {
@@ -125,7 +153,7 @@ async function parseHTML(rawHTML) {
                 where: {
                     rollno: rollNo
                 }
-            })
+            });
         }
 
         tables[tables.length - 2].querySelector
@@ -148,7 +176,7 @@ async function fetchBatch(batch) {
                 timeout: 5000
             });
 
-            await parseHTML(res.data, parseInt(batch));
+            await parseHTML(res.data, batch);
         } catch (err) {
             fetchErrCount++;
         }
