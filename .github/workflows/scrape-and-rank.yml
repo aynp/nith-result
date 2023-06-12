@@ -1,6 +1,11 @@
 name: Scrape and Rank
+
 on:
   workflow_dispatch:
+
+env:
+  DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
 jobs:
   scrape:
     name: Scrape 
