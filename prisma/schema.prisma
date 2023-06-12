@@ -22,8 +22,9 @@ model result {
   grade_letter String
   semester     Int
   gp           Int
-  course       course  @relation(fields: [code], references: [code])
-  student      student @relation(fields: [rollno], references: [rollno])
+  course       course       @relation(fields: [code], references: [code])
+  student      student      @relation(fields: [rollno], references: [rollno])
+  sem_summary  sem_summary? @relation(fields: [rollno, semester], references: [rollno, semester])
 
   @@id([rollno, code, semester])
 }
@@ -55,13 +56,14 @@ model student {
 }
 
 model sem_summary {
-  rollno        String
-  semester      Int
-  sgpi          String
-  cgpi          String
-  sgpi_total    Int
-  cgpi_total    Int
-  student       student? @relation(fields: [rollno], references: [rollno])
+  rollno     String
+  semester   Int
+  sgpi       String
+  cgpi       String
+  sgpi_total Int
+  cgpi_total Int
+  student    student? @relation(fields: [rollno], references: [rollno])
+  result     result[]
 
   @@id([rollno, semester])
 }
