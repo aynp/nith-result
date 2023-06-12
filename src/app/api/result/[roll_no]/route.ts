@@ -10,6 +10,12 @@ export async function GET(request: Request, { params }: { params: { roll_no: str
         where: {
             rollno: roll_no
         },
+        include: {
+            branch: true,
+            summary: true,
+            sem_summary: true,
+            rank: true
+        }
     });
 
     return NextResponse.json(result);
