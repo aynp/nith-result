@@ -3,8 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = "file:../prod.db"
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model course {
@@ -23,7 +23,6 @@ model result {
   semester     Int
   gp           Int
   course       course       @relation(fields: [code], references: [code])
-  student      student      @relation(fields: [rollno], references: [rollno])
   sem_summary  sem_summary? @relation(fields: [rollno, semester], references: [rollno, semester])
 
   @@id([rollno, code, semester])
@@ -35,8 +34,9 @@ model result_pg {
   grade        Int
   grade_letter String
   semester     Int
-  course       course  @relation(fields: [code], references: [code])
-  student      student @relation(fields: [rollno], references: [rollno])
+  gp           Int
+  course       course       @relation(fields: [code], references: [code])
+  sem_summary  sem_summary? @relation(fields: [rollno, semester], references: [rollno, semester])
 
   @@id([rollno, code, semester])
 }
@@ -46,13 +46,11 @@ model student {
   name         String
   fathers_name String
   batch        String
-  summary      summary?
-  rank         rank?
-  result       result[]
-  result_pg    result_pg[]
   branch_code  String?
   branch       branch?       @relation(fields: [branch_code], references: [code])
+  rank         rank?
   sem_summary  sem_summary[]
+  summary      summary?
 }
 
 model sem_summary {
@@ -62,8 +60,9 @@ model sem_summary {
   cgpi       String
   sgpi_total Int
   cgpi_total Int
-  student    student? @relation(fields: [rollno], references: [rollno])
+  student    student?    @relation(fields: [rollno], references: [rollno])
   result     result[]
+  result_pg  result_pg[]
 
   @@id([rollno, semester])
 }
