@@ -27,7 +27,7 @@ export const branchMap = {
 for (const branch in branchMap) {
     await prisma.branch.upsert({
         update: {
-            name: branch
+            name: branchMap[branch]
         },
         create: {
             code: branch,
