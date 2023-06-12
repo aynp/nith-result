@@ -167,7 +167,7 @@ async function fetchBatch(batch) {
     const emailsAll = fs.readFileSync(`./data/${batch}`, 'utf-8');
     const emails = emailsAll.split(',');
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < emails.length; i++) {
         const email = emails[i];
         const rollNo = email.substring(0, email.indexOf('@'));
         console.log(rollNo);
