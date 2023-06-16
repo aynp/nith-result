@@ -57,14 +57,14 @@ async function parseHTML(rawHTML, batch) {
                 const GP = parseInt(subjectInfo[5].textContent.trim());
 
                 courses.push({
-                    code: courseCode,
-                    title: courseName,
-                    credits: courseCredits
+                    course_code: courseCode,
+                    course_title: courseName,
+                    course_credits: courseCredits
                 })
 
                 results.push({
                     rollno: rollNo,
-                    code: courseCode,
+                    course_code: courseCode,
                     semester: semNo,
                     grade: GP / courseCredits,
                     grade_letter: gradeLetter,

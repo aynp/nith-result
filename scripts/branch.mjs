@@ -27,14 +27,14 @@ export const branchMap = {
 for (const branch in branchMap) {
     await prisma.branch.upsert({
         update: {
-            name: branchMap[branch]
+            branch_name: branchMap[branch]
         },
         create: {
-            code: branch,
-            name: branchMap[branch]
+            branch_code: branch,
+            branch_name: branchMap[branch]
         },
         where: {
-            code: branch
+            branch_code: branch
         }
     })
 }
