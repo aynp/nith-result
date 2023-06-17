@@ -3,6 +3,8 @@ import { readdirSync } from "fs";
 import { branchMap } from "./branch.mjs";
 const prisma = new PrismaClient();
 
+const rankMap = new Map();
+
 async function _rank(query, type, basedOn) {
     const students = await prisma.student.findMany({
         where: query,
@@ -14,24 +16,33 @@ async function _rank(query, type, basedOn) {
     })
 
     for (let i = 1; i <= students.length; i++) {
-        await prisma.rank.upsert({
-            create: {
-                rollno: students[i - 1].rollno,
-                [`${type}_rank_${basedOn}`]: i
-            },
-            update: {
-                [`${type}_rank_${basedOn}`]: i
-            },
-            where: {
-                rollno: students[i - 1].rollno
-            }
-        })
+        if(!rankMap.has(students[i - 1].rollno)) {
+            rankMap.set(students[i - 1].rollno, {});
+        }
+
+        rankMap.get(students[i - 1].rollno)[`${type}_rank_${basedOn}`] = i;
     }
+}
+
+async function _updateRank() {
+    await prisma.rank.deleteMany({}); 
+
+    const ranksArr = [];
+    for (const [rollno, ranks] of rankMap) {
+        ranksArr.push({
+            rollno: rollno,
+            ...ranks
+        });
+    }
+
+    await prisma.rank.createMany({
+        data: ranksArr
+    });
 }
 
 async function main() {
     // rank in entire college
-    await _rank({}, 'college', 'cgpi');
+    await _rank({}, 'college', 'cgpi', true);
     await _rank({}, 'college', 'sgpi');
 
     const batches = readdirSync('./data');
@@ -58,7 +69,7 @@ async function main() {
         }
     }
 
-    // TODO rank in class
+    await _updateRank();
 }
 
 await main();
