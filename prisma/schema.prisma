@@ -2,11 +2,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// datasource db {
-//   provider  = "postgresql"
-//   url       = env("DATABASE_URL")
-//   directUrl = env("DIRECT_URL")
-// }
 datasource db {
   provider     = "mysql"
   url          = env("DATABASE_URL")
@@ -14,43 +9,44 @@ datasource db {
 }
 
 model course {
-  course_code      String      @id
-  course_title     String
-  course_credits   Int
-  result    result[]
-  result_pg result_pg[]
+  course_code    String      @id
+  course_title   String
+  course_credits Int
+  result         result[]
+  result_pg      result_pg[]
 
   @@index([course_code])
 }
 
 model result {
-  id             String       @id @default(uuid())
-  rollno         String
-  course_code    String
-  grade          Int
-  grade_letter   String
-  semester       Int
-  gp             Int
-  course         course       @relation(fields: [course_code], references: [course_code])
-  sem_summary_id String?
-  sem_summary    sem_summary? @relation(fields: [sem_summary_id], references: [id])
+  rollno       String
+  course_code  String
+  grade        Int
+  grade_letter String
+  semester     Int
+  gp           Int
+  course       course      @relation(fields: [course_code], references: [course_code])
+  sem_summary  sem_summary @relation(fields: [rollno, semester], references: [rollno, semester])
 
-  @@index([sem_summary_id])
+  @@id([rollno, course_code, semester])
+  @@unique([rollno, course_code, semester])
+  @@index([rollno, semester])
 }
 
 model result_pg {
-  id             String       @id @default(uuid())
   rollno         String
   course_code    String
   grade          Int
   grade_letter   String
   semester       Int
   gp             Int
-  course         course       @relation(fields: [course_code], references: [course_code])
+  course         course      @relation(fields: [course_code], references: [course_code])
   sem_summary_id String?
-  sem_summary    sem_summary? @relation(fields: [sem_summary_id], references: [id])
+  sem_summary    sem_summary @relation(fields: [rollno, semester], references: [rollno, semester])
 
-  @@index([sem_summary_id])
+  @@id([rollno, course_code, semester])
+  @@unique([rollno, course_code, semester])
+  @@index([rollno, semester])
 }
 
 model student {
@@ -69,7 +65,6 @@ model student {
 }
 
 model sem_summary {
-  id         String      @id @default(uuid())
   rollno     String
   semester   Int
   sgpi       String
@@ -80,6 +75,8 @@ model sem_summary {
   result     result[]
   result_pg  result_pg[]
 
+  @@id([rollno, semester])
+  @@unique([rollno, semester])
   @@index([rollno])
 }
 
