@@ -2,39 +2,39 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export const branchMap = {
-    'bcs': 'Computer Science & Engineering',
-    'dcs': 'Computer Science & Engineering Dual Degree',
+  bcs: "Computer Science & Engineering",
+  dcs: "Computer Science & Engineering Dual Degree",
 
-    'bec': 'Electronics & Communication Engineering',
-    'dec': 'Electronics & Communication Engineering Dual Degree',
+  bec: "Electronics & Communication Engineering",
+  dec: "Electronics & Communication Engineering Dual Degree",
 
-    'bce': 'Civil Engineering',
-    'bar': 'Architecture',
-    'bch': 'Chemical Engineering',
-    'bee': 'Electrical Engineering',
+  bce: "Civil Engineering",
+  bar: "Architecture",
+  bch: "Chemical Engineering",
+  bee: "Electrical Engineering",
 
-    'bme': 'Mechanical Engineering',
-    'bms': 'Material Science & Engineering',
-    'bma': 'Mathematics & Scientific Computing',
+  bme: "Mechanical Engineering",
+  bms: "Material Science & Engineering",
+  bma: "Mathematics & Scientific Computing",
 
-    // '': 'Humanities and Social Sciences',
-    // '': 'Management Studies',
+  // '': 'Humanities and Social Sciences',
+  // '': 'Management Studies',
 
-    'bph': 'Physics & Photonics Science',
-    // '': 'Centre for Energy Studies'
-}
+  bph: "Physics & Photonics Science",
+  // '': 'Centre for Energy Studies'
+};
 
 for (const branch in branchMap) {
-    await prisma.branch.upsert({
-        update: {
-            branch_name: branchMap[branch]
-        },
-        create: {
-            branch_code: branch,
-            branch_name: branchMap[branch]
-        },
-        where: {
-            branch_code: branch
-        }
-    })
+  await prisma.branch.upsert({
+    update: {
+      branch_name: branchMap[branch],
+    },
+    create: {
+      branch_code: branch,
+      branch_name: branchMap[branch],
+    },
+    where: {
+      branch_code: branch,
+    },
+  });
 }
